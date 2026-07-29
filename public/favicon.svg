@@ -1,0 +1,19 @@
+<svg width="32" height="32" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Diamond Board -->
+  <polygon points="250,55 475,205 250,325 25,205" fill="#0b84da"/>
+  
+  <!-- Left/Underlapping Band -->
+  <path d="M 120,250 C 150,285 180,310 205,330 L 205,395 C 180,375 150,350 120,315 Z" fill="#0b84da"/>
+  
+  <!-- Right/Overlapping Band -->
+  <path d="M 380,250 C 340,285 280,320 225,340 L 225,405 C 280,385 340,350 380,315 Z" fill="#0b84da"/>
+
+  <!-- Tassel line on top board -->
+  <path d="M 250,190 L 425,230" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Hanging tassel cord -->
+  <line x1="425" y1="230" x2="425" y2="380" stroke="#0b84da" stroke-width="10"/>
+  
+  <!-- Tassel Brush (Diamond shape) -->
+  <polygon points="425,375 405,420 425,465 445,420" fill="#0b84da"/>
+</svg>

@@ -1,0 +1,418 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GPM Global Design System — Premium Arabic-First SaaS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 🌟 Global Font & Typography */
+* {
+  font-family: 'Cairo', 'Lexend', system-ui, -apple-system, sans-serif !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+}
+
+/* 🟢 Protect Material Icons */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  direction: ltr !important;
+}
+
+/* ── Base Body ─────────────────────────────────────────────────────────── */
+body {
+  background-color: #f5f7f8;
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+.dark body {
+  background-color: #0b1319;
+  color: #f8fafc;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb { background: rgba(248, 250, 252, 0.1); }
+::-webkit-scrollbar-thumb:hover { background: rgba(11, 132, 218, 0.35); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   🎞️  KEYFRAME ANIMATIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Branded Loader Animations */
+@keyframes gpm-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes gpm-pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50%       { transform: scale(1.1); opacity: 0.15; }
+}
+@keyframes gpm-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+@keyframes gpm-dot-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1); opacity: 1; }
+}
+@keyframes gpm-fade-text {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+@keyframes gpm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Page / Section Reveal */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Counter animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero floating elements */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%       { transform: translateY(-18px) rotate(5deg); }
+  66%       { transform: translateY(8px) rotate(-3deg); }
+}
+@keyframes floatMedium {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-12px) rotate(8deg); }
+}
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🎨  UTILITY CLASSES
+   ══════════════════════════════════════════════════════════════════════ */
+
+.animate-fade-in-up    { animation: fadeInUp 0.5s ease-out both; }
+.animate-fade-in-scale { animation: fadeInScale 0.4s ease-out both; }
+.animate-slide-in-right{ animation: slideInRight 0.35s ease-out both; }
+.animate-float-slow    { animation: floatSlow 7s ease-in-out infinite; }
+.animate-float-medium  { animation: floatMedium 5s ease-in-out infinite; }
+.animate-count-up      { animation: countUp 0.5s ease-out both; }
+
+/* Staggered children delay */
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Page entry transition */
+.page-enter {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* ── Shadow Tokens ─────────────────────────────────────────────────────── */
+.shadow-premium {
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03), 0 4px 12px 0 rgba(0,0,0,0.04);
+}
+.dark .shadow-premium {
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 4px 12px 0 rgba(0,0,0,0.15);
+}
+.shadow-glow {
+  box-shadow: 0 0 0 3px rgba(11,132,218,0.15), 0 4px 16px rgba(11,132,218,0.12);
+}
+.shadow-card {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+}
+.dark .shadow-card {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* ── Card Hover Lift ───────────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+.dark .card-hover:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+}
+
+/* ── Gradient Text ─────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #0b84da, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-warm {
+  background: linear-gradient(135deg, #0b84da, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Gradient Backgrounds ──────────────────────────────────────────────── */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #0b84da 0%, #0671c2 100%);
+}
+.bg-gradient-hero {
+  background: linear-gradient(160deg, #f0f9ff 0%, #e0f2fe 50%, #f5f7f8 100%);
+}
+.dark .bg-gradient-hero {
+  background: linear-gradient(160deg, #0b1319 0%, #0c1f2e 50%, #0b1319 100%);
+}
+
+/* ── Active Nav Indicator ──────────────────────────────────────────────── */
+@layer components {
+  .active-role {
+    background: linear-gradient(90deg, rgba(11,132,218,0.1), rgba(11,132,218,0.05));
+    border-right: 3px solid #0b84da;
+    color: #0b84da;
+    font-weight: 700;
+  }
+}
+
+/* ── Form Controls ─────────────────────────────────────────────────────── */
+input, textarea {
+  border-radius: 12px !important;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+}
+input:focus, textarea:focus {
+  border-color: #0b84da !important;
+  box-shadow: 0 0 0 3px rgba(11,132,218,0.15) !important;
+  outline: none !important;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+button {
+  font-weight: 700 !important;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1) !important;
+  /* Never override explicitly set text-color (e.g. text-white on gradient buttons) */
+}
+/* Only apply hover lift to non-icon, non-disabled buttons */
+button:not(:disabled):not(.btn-icon):hover  { transform: translateY(-1px); }
+button:not(:disabled):not(.btn-icon):active { transform: translateY(0px) scale(0.98); }
+
+/* Force white text on all primary/gradient submit buttons */
+button[type="submit"],
+.btn-primary {
+  color: #ffffff !important;
+}
+button[type="submit"]:disabled,
+.btn-primary:disabled {
+  color: rgba(255,255,255,0.75) !important;
+}
+
+/* ── Focus Ring ────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #0b84da !important;
+  outline-offset: 2px !important;
+}
+
+/* ── Table Row Hover ───────────────────────────────────────────────────── */
+.table-row-hover {
+  transition: background-color 0.15s ease;
+}
+
+/* ── Hero Floating Decorations ─────────────────────────────────────────── */
+.hero-orb {
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* ── Sidebar Active Item ───────────────────────────────────────────────── */
+.sidebar-active {
+  background: linear-gradient(90deg, rgba(11,132,218,0.12) 0%, rgba(11,132,218,0.04) 100%);
+  border-right: 3px solid #0b84da;
+  color: #0b84da !important;
+}
+[dir="ltr"] .sidebar-active {
+  border-right: none;
+  border-left: 3px solid #0b84da;
+}
+
+/* ── Stats Counter Animation ───────────────────────────────────────────── */
+.stat-value {
+  animation: countUp 0.6s ease-out both;
+}
+
+/* ── Animated Gradient Border ──────────────────────────────────────────── */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #0b84da, #06b6d4, #0b84da);
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Smooth Details/Summary (FAQ) ──────────────────────────────────────── */
+details summary { cursor: pointer; list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+
+/* ── RTL Compatibility ─────────────────────────────────────────────────── */
+[dir="rtl"] .sidebar-active {
+  border-right: 3px solid #0b84da;
+  border-left: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🎛️  PREMIUM NATIVE SELECT OVERRIDE
+   Makes any remaining native <select> match the custom design system.
+   ══════════════════════════════════════════════════════════════════════ */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px !important;
+  padding: 0.6rem 2.5rem 0.6rem 1rem;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #1e293b;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  /* RTL-friendly chevron via inline SVG background */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: left 0.75rem center !important;
+  background-size: 16px !important;
+}
+[dir="rtl"] select {
+  padding: 0.6rem 1rem 0.6rem 2.5rem !important;
+  background-position: left 0.75rem center !important;
+}
+select:focus {
+  border-color: #0b84da !important;
+  box-shadow: 0 0 0 3px rgba(11,132,218,0.15) !important;
+  outline: none !important;
+}
+.dark select {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+}
+select option {
+  background-color: #ffffff;
+  color: #1e293b;
+  padding: 8px 12px;
+}
+.dark select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ✨  DROPDOWN PANEL ANIMATION
+   ══════════════════════════════════════════════════════════════════════ */
+@keyframes dropdownOpen {
+  from { opacity: 0; transform: scaleY(0.94) translateY(-6px); }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+.dropdown-enter {
+  animation: dropdownOpen 0.18s cubic-bezier(0.34,1.56,0.64,1) both;
+  transform-origin: top;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🃏  ENHANCED CARD MICRO-INTERACTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+.card-interactive {
+  transition: transform 0.22s cubic-bezier(0.34,1.2,0.64,1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-4px) scale(1.005);
+  box-shadow: 0 16px 40px rgba(11,132,218,0.1), 0 4px 12px rgba(0,0,0,0.06);
+  border-color: rgba(11,132,218,0.25);
+}
+.dark .card-interactive:hover {
+  box-shadow: 0 16px 40px rgba(11,132,218,0.15), 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🔢  WESTERN DIGIT ENFORCEMENT
+   font-variant-numeric: makes browsers prefer ASCII digits in numeric context
+   ══════════════════════════════════════════════════════════════════════ */
+.tabular-nums,
+.stat-value,
+[class*="counter"],
+[class*="badge"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   🌊 SCROLL REVEAL & STAGGERED ENTRANCES
+   ══════════════════════════════════════════════════════════════════════ */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delay-75 { transition-delay: 75ms; }
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-250 { transition-delay: 250ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-350 { transition-delay: 350ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-450 { transition-delay: 450ms; }
+.delay-500 { transition-delay: 500ms; }
+.delay-550 { transition-delay: 550ms; }
+.delay-600 { transition-delay: 600ms; }
+.delay-700 { transition-delay: 700ms; }
+.delay-800 { transition-delay: 800ms; }
+.delay-900 { transition-delay: 900ms; }
+.delay-1000 { transition-delay: 1000ms; }
+.delay-1100 { transition-delay: 1100ms; }
+.delay-1200 { transition-delay: 1200ms; }
