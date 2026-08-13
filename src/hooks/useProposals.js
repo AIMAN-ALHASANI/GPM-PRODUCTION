@@ -39,6 +39,7 @@ export const useEvaluateProposal = () => {
     mutationFn: ({ id, evaluationData }) => proposalService.evaluateProposal(id, evaluationData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-proposals'] });
       toast.success('تم تقييم المقترح بنجاح');
     },
     onError: (error) => {

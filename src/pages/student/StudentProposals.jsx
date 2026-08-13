@@ -182,8 +182,9 @@ const StudentProposals = () => {
   };
 
   const handleViewReason = (id) => {
-    console.log("Viewing reason for proposal ID:", id);
-    alert("سبب الرفض: النطاق واسع جدًا للفصل الحالي");
+    const proposal = formattedProposals.find(p => p.id === id);
+    const feedback = proposal?.reason || 'لا يوجد سبب محدد';
+    alert(`ملاحظات رئيس القسم:\n\n${feedback}`);
   };
 
   const handleDownloadTemplate = () => {
