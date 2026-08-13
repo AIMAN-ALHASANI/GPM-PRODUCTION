@@ -177,7 +177,7 @@ const StudentCreateProposal = () => {
               id="description"
               value={form.description}
               onChange={set('description')}
-              placeholder="اكتب وصفاً تفصيلياً للمشروع المقترح، أهدافه، وطريقة تنفيذه..."
+              placeholder="اكتب وصف بسيط للمشروع المقترح"
               rows={6}
               className={`${inputCls(errors.description)} resize-none`}
             />
