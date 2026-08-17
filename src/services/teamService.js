@@ -145,12 +145,20 @@ const teamService = {
   // ============================
   getPendingSupervisorTeams: async () => {
     const response = await apiClient.get('/Team/pending-supervisor');
-    return response.data?.data || response.data;
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data) ? data : [];
+  },
+
+  getCollegeSupervisors: async () => {
+    const response = await apiClient.get('/Team/college-supervisors');
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data) ? data : [];
   },
 
   getAvailableSupervisorsForTeam: async (teamId) => {
     const response = await apiClient.get(`/Team/${teamId}/available-supervisors`);
-    return response.data?.data || response.data;
+    const data = response.data?.data ?? response.data;
+    return Array.isArray(data) ? data : [];
   },
 
   assignSupervisor: async (teamId, supervisorUserId) => {

@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         id: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || decoded.sub || decoded.nameid,
         email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || decoded.email,
         role: normalizeRole(rawRole),
-        fullName: decoded.fullName || decoded.FullName || 'User'
+        fullName: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || decoded.name || decoded.fullName || decoded.FullName || ''
       };
 
       return finalUser;
@@ -46,14 +46,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Async enrichment: calls GET /auth/me to get the real fullName from backend.
+  // Async enrichment: calls GET /auth/me to get the real fullName from backend if missing.
   // Backend returns UserDetailsDto: { UserID, FullName, Email, Role, IsActive, CreatedAt }
   const enrichUserWithProfile = async () => {
     try {
       const meResponse = await apiClient.get('/auth/me');
       const fullName = meResponse.data?.FullName || meResponse.data?.fullName;
       if (fullName) {
-        setUser(prev => prev ? { ...prev, fullName } : prev);
+        setUser(prev => {
+          if (!prev) return prev;
+          const updated = { ...prev, fullName };
+          try {
+            localStorage.setItem('user', JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
       }
     } catch {
       // Silent — token-derived name is already set as fallback
@@ -64,7 +71,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
       
-      // We only care about the token as per the new requirement
       const token = response.data.token || response.data.Token;
       
       if (!token) {
@@ -72,13 +78,29 @@ export const AuthProvider = ({ children }) => {
       }
 
       localStorage.setItem('token', token);
-      const userData = getUserFromToken(token);
-      setUser(userData);
+      const tokenUser = getUserFromToken(token);
+      
+      const responseUser = response.data.user || response.data.User;
+      const finalUser = {
+        ...tokenUser,
+        id: responseUser?.userID ?? responseUser?.userId ?? responseUser?.id ?? tokenUser?.id,
+        email: responseUser?.email ?? responseUser?.Email ?? tokenUser?.email,
+        role: normalizeRole(responseUser?.role ?? responseUser?.Role ?? tokenUser?.role),
+        fullName: responseUser?.fullName ?? responseUser?.FullName ?? tokenUser?.fullName ?? ''
+      };
 
-      // Enrich with real fullName immediately after login
-      enrichUserWithProfile();
+      try {
+        localStorage.setItem('user', JSON.stringify(finalUser));
+      } catch {}
 
-      return userData;
+      setUser(finalUser);
+
+      // Enrich with real fullName if anything was missing
+      if (!finalUser.fullName) {
+        enrichUserWithProfile();
+      }
+
+      return finalUser;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -105,10 +127,23 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = () => {
     const token = localStorage.getItem('token');
     if (token) {
-      const userData = getUserFromToken(token);
-      if (userData) {
-        setUser(userData);
-        enrichUserWithProfile(); // silently enrich with real fullName
+      const tokenUser = getUserFromToken(token);
+      if (tokenUser) {
+        let savedUser = null;
+        try {
+          const stored = localStorage.getItem('user');
+          if (stored) savedUser = JSON.parse(stored);
+        } catch {}
+
+        const finalUser = {
+          ...tokenUser,
+          fullName: savedUser?.fullName || tokenUser.fullName || ''
+        };
+
+        setUser(finalUser);
+        if (!finalUser.fullName) {
+          enrichUserWithProfile();
+        }
       } else {
         logout();
       }

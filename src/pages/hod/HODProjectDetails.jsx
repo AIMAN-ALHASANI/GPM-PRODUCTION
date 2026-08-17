@@ -73,10 +73,27 @@ const HODProjectDetails = () => {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-100 dark:border-slate-800">
+                        {project.memberNames && project.memberNames.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">أعضاء الفريق</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {project.memberNames.map((name, idx) => (
+                                        <span key={idx} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs text-slate-700 dark:text-slate-300 font-bold border border-slate-200/55 dark:border-slate-700/55">
+                                            {name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                             <div>
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">اسم الفريق</h4>
                                 <p className="text-sm font-bold text-slate-900 dark:text-white">{project.teamName || 'غير محدد'}</p>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">القسم</h4>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white">{project.departmentName || 'غير محدد'}</p>
                             </div>
                             <div>
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">المشرف</h4>

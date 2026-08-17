@@ -128,3 +128,30 @@ export const useRemoveTeamMember = () => {
     },
   });
 };
+
+export const usePendingSupervisorTeams = () => {
+  return useQuery({
+    queryKey: ['teams', 'pending-supervisor'],
+    queryFn: teamService.getPendingSupervisorTeams,
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+export const useCollegeSupervisors = () => {
+  return useQuery({
+    queryKey: ['supervisors', 'college'],
+    queryFn: teamService.getCollegeSupervisors,
+    staleTime: 1 * 60 * 1000,
+  });
+};
+
+export const useAssignSupervisor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ teamId, supervisorUserId }) => teamService.assignSupervisor(teamId, supervisorUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams', 'pending-supervisor'] });
+      queryClient.invalidateQueries({ queryKey: ['supervisors', 'college'] });
+    },
+  });
+};

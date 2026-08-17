@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useSupervisorProjects, useUpdateProjectStatus } from '../../hooks/useSupervisor';
 import toast from 'react-hot-toast';
@@ -41,6 +41,103 @@ const getStatusClass = (status) => {
   }
 };
 
+// Completion Confirmation Modal
+const CompletionConfirmModal = ({ projectTitle, isPending, onConfirm, onCancel }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" dir="rtl">
+    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200 text-right">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4 flex-row-reverse">
+        <div className="size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-2xl text-emerald-600 dark:text-emerald-400">task_alt</span>
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">تأكيد إكمال المشروع</h2>
+          <p className="text-xs text-slate-400 mt-0.5 truncate">{projectTitle}</p>
+        </div>
+      </div>
+      <div className="p-6 space-y-4">
+        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-2xl p-4">
+          <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300 leading-relaxed">
+            هل أنت متأكد أن هذا المشروع قد استوفى جميع متطلباته وأصبح جاهزاً للأرشفة؟
+          </p>
+        </div>
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-lg mt-0.5 shrink-0">warning</span>
+          <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+            بعد تأكيد الإكمال، سيُعرض المشروع للمدير كمشروع جاهز للأرشفة. يمكن للمدير أرشفة المشروع لاحقاً.
+          </p>
+        </div>
+      </div>
+      <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex gap-3 justify-end bg-slate-50/60 dark:bg-slate-800/30">
+        <button
+          onClick={onCancel}
+          disabled={isPending}
+          className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-700"
+        >
+          إلغاء / العودة
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isPending}
+          className="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm shadow-emerald-500/20"
+        >
+          {isPending && (
+            <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+          )}
+          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+          نعم، تأكيد الإكمال
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Project Details Modal for Supervisor
+const ProjectDetailsModal = ({ project, onClose }) => {
+  if (!project) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200 text-right" dir="rtl">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-row-reverse">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white">تفاصيل المشروع</h2>
+          <button onClick={onClose} className="size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
+            <span className="material-symbols-outlined text-slate-500">close</span>
+          </button>
+        </div>
+        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1 md:col-span-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">عنوان المشروع</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{project.title || project.Title}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">اسم الفريق</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{project.teamName || project.TeamName || 'غير محدد'}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">حالة المشروع</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{getStatusLabel(project.status || project.Status)}</p>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">أهداف المشروع</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 whitespace-pre-wrap">
+              {project.objective || project.Objective || 'لا توجد أهداف محددة'}
+            </p>
+          </div>
+          {(project.abstract || project.Abstract) && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ملخص المشروع</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 whitespace-pre-wrap">
+                {project.abstract || project.Abstract}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SupervisorProjects = () => {
   const { data: projects, isLoading, isError } = useSupervisorProjects();
   const updateStatusMutation = useUpdateProjectStatus();
@@ -49,10 +146,31 @@ const SupervisorProjects = () => {
   const [statusFilter, setStatusFilter] = useState("الكل");
   const [selectedProject, setSelectedProject] = useState(null);
 
+  // Pending completion: { projectId, projectTitle }
+  const [pendingCompletion, setPendingCompletion] = useState(null);
+
   const statusOptions = ["الكل", "Pending", "Approved", "InProgress", "Completed"];
 
-  const handleStatusChange = (projectId, newStatus) => {
+  const handleStatusChange = (projectId, newStatus, projectTitle) => {
+    if (newStatus === 'Completed') {
+      // Show confirmation modal before proceeding
+      setPendingCompletion({ projectId, projectTitle });
+      return;
+    }
+    // All other statuses proceed immediately
     updateStatusMutation.mutate({ projectId, status: newStatus });
+  };
+
+  const handleConfirmCompletion = () => {
+    if (!pendingCompletion) return;
+    updateStatusMutation.mutate(
+      { projectId: pendingCompletion.projectId, status: 'Completed' },
+      { onSettled: () => setPendingCompletion(null) }
+    );
+  };
+
+  const handleCancelCompletion = () => {
+    setPendingCompletion(null);
   };
 
   const stats = useMemo(() => {
@@ -75,7 +193,7 @@ const SupervisorProjects = () => {
       const teamName = project.teamName || project.TeamName || "";
       const status = project.status || project.Status || "";
 
-      const matchSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      const matchSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           teamName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchStatus = statusFilter === "الكل" || status === statusFilter;
 
@@ -139,9 +257,9 @@ const SupervisorProjects = () => {
             <div className="flex-1">
               <div className="relative">
                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                <input 
-                  className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right" 
-                  placeholder="ابحث عن مشروع حسب العنوان أو اسم الفريق..." 
+                <input
+                  className="w-full pr-10 pl-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-right"
+                  placeholder="ابحث عن مشروع حسب العنوان أو اسم الفريق..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -158,9 +276,9 @@ const SupervisorProjects = () => {
                 <div className="absolute right-0 mt-2 w-42 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 hidden group-hover:block z-50">
                   <div className="py-2">
                     {statusOptions.map(option => (
-                      <button 
-                        key={option} 
-                        onClick={() => setStatusFilter(option)} 
+                      <button
+                        key={option}
+                        onClick={() => setStatusFilter(option)}
                         className="w-full text-right px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-355"
                       >
                         {getStatusLabel(option)}
@@ -222,7 +340,7 @@ const SupervisorProjects = () => {
                     <select
                       value={status}
                       disabled={updateStatusMutation.isPending}
-                      onChange={(e) => handleStatusChange(projectID, e.target.value)}
+                      onChange={(e) => handleStatusChange(projectID, e.target.value, title)}
                       className="text-xs font-bold bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                     >
                       <option value="Pending">قيد الانتظار</option>
@@ -245,60 +363,23 @@ const SupervisorProjects = () => {
         </div>
       </div>
 
-      {/* Details Modal */}
+      {/* Project Details Modal */}
       {selectedProject && (
         <ProjectDetailsModal
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
         />
       )}
-    </div>
-  );
-};
 
-// ─── Project Details Modal for Supervisor ─────────────────────────────────────────
-const ProjectDetailsModal = ({ project, onClose }) => {
-  if (!project) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200 text-right" dir="rtl">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-row-reverse">
-          <h2 className="text-xl font-black text-slate-900 dark:text-white">تفاصيل المشروع</h2>
-          <button onClick={onClose} className="size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors">
-            <span className="material-symbols-outlined text-slate-500">close</span>
-          </button>
-        </div>
-        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1 md:col-span-2">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">عنوان المشروع</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{project.title || project.Title}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">اسم الفريق</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{project.teamName || project.TeamName || 'غير محدد'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">حالة المشروع</p>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">{getStatusLabel(project.status || project.Status)}</p>
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">أهداف المشروع</p>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 whitespace-pre-wrap">
-              {project.objective || project.Objective || 'لا توجد أهداف محددة'}
-            </p>
-          </div>
-          {(project.abstract || project.Abstract) && (
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ملخص المشروع</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 whitespace-pre-wrap">
-                {project.abstract || project.Abstract}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Completion Confirmation Modal – only for "Completed" status */}
+      {pendingCompletion && (
+        <CompletionConfirmModal
+          projectTitle={pendingCompletion.projectTitle}
+          isPending={updateStatusMutation.isPending}
+          onConfirm={handleConfirmCompletion}
+          onCancel={handleCancelCompletion}
+        />
+      )}
     </div>
   );
 };

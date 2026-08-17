@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { usePendingSupervisorTeams, useCollegeSupervisors, useAssignSupervisor } from '../../hooks/useTeams';
 import teamService from '../../services/teamService';
 
 const SupervisorAssignment = () => {
-    const [pendingTeams, setPendingTeams] = useState([]);
-    const [isLoadingTeams, setIsLoadingTeams] = useState(true);
+    const { data: pendingTeams = [], isLoading: isLoadingTeams, isError: isErrorTeams } = usePendingSupervisorTeams();
+    const { data: collegeSupervisors = [], isLoading: isLoadingSupervisors, isError: isErrorSupervisors } = useCollegeSupervisors();
+    const assignSupervisorMutation = useAssignSupervisor();
+
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [availableSupervisors, setAvailableSupervisors] = useState([]);
-    const [isLoadingSupervisors, setIsLoadingSupervisors] = useState(false);
+    const [isLoadingAvailable, setIsLoadingAvailable] = useState(false);
     const [selectedSupervisor, setSelectedSupervisor] = useState('');
-    const [isAssigning, setIsAssigning] = useState(false);
 
     const normalizeTeam = (team) => ({
         ...team,
@@ -27,49 +29,25 @@ const SupervisorAssignment = () => {
         fullName: supervisor.FullName ?? supervisor.fullName ?? supervisor.name,
         email: supervisor.Email ?? supervisor.email,
         departmentName: supervisor.DepartmentName ?? supervisor.departmentName,
-        collegeName: supervisor.CollegeName ?? supervisor.collegeName
+        collegeName: supervisor.CollegeName ?? supervisor.collegeName,
+        currentTeamsCount: supervisor.CurrentTeamsCount ?? supervisor.currentTeamsCount ?? 0
     });
 
-    useEffect(() => {
-        fetchPendingTeams();
-    }, []);
-
-    const fetchPendingTeams = async () => {
-        setIsLoadingTeams(true);
-        try {
-            const data = await teamService.getPendingSupervisorTeams();
-            setPendingTeams((data || []).map(normalizeTeam));
-        } catch (error) {
-            console.error('Fetch teams error:', {
-                status: error.response?.status,
-                data: error.response?.data,
-                url: error.config?.url,
-                baseURL: error.config?.baseURL
-            });
-            toast.error('فشل في جلب الفرق بانتظار المشرفين');
-        } finally {
-            setIsLoadingTeams(false);
-        }
-    };
-
     const handleOpenModal = async (team) => {
-        setSelectedTeam(team);
+        const normalized = normalizeTeam(team);
+        setSelectedTeam(normalized);
         setSelectedSupervisor('');
-        setIsLoadingSupervisors(true);
+        setIsLoadingAvailable(true);
         try {
-            const data = await teamService.getAvailableSupervisorsForTeam(team.teamID);
-            setAvailableSupervisors((data || []).map(normalizeSupervisor));
+            const data = await teamService.getAvailableSupervisorsForTeam(normalized.teamID);
+            const list = Array.isArray(data) ? data : [];
+            setAvailableSupervisors(list.map(normalizeSupervisor));
         } catch (error) {
-            console.error('Fetch supervisors error:', {
-                status: error.response?.status,
-                data: error.response?.data,
-                url: error.config?.url,
-                baseURL: error.config?.baseURL
-            });
-            toast.error('لا يوجد مشرفون متاحون لهذا الفريق');
+            console.error('Fetch available supervisors error:', error);
+            toast.error('فشل في جلب المشرفين المتاحين');
             setAvailableSupervisors([]);
         } finally {
-            setIsLoadingSupervisors(false);
+            setIsLoadingAvailable(false);
         }
     };
 
@@ -85,16 +63,16 @@ const SupervisorAssignment = () => {
             return;
         }
 
-        setIsAssigning(true);
         try {
-            await teamService.assignSupervisor(selectedTeam.teamID, selectedSupervisor);
+            await assignSupervisorMutation.mutateAsync({
+                teamId: selectedTeam.teamID,
+                supervisorUserId: Number(selectedSupervisor)
+            });
             toast.success('تم إسناد المشرف بنجاح');
             handleCloseModal();
-            fetchPendingTeams();
         } catch (error) {
+            console.error('Assign supervisor error:', error);
             toast.error('فشل إسناد المشرف');
-        } finally {
-            setIsAssigning(false);
         }
     };
 
@@ -110,7 +88,7 @@ const SupervisorAssignment = () => {
                             <span className="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    <div className="p-6 space-y-6">
+                    <div className="p-6 space-y-6 text-right">
                         <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                             <p className="text-sm text-slate-500 mb-1">الفريق المحدد</p>
                             <p className="font-bold text-slate-900 dark:text-white text-lg">{selectedTeam.teamName}</p>
@@ -119,18 +97,18 @@ const SupervisorAssignment = () => {
                         
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">اختر المشرف المتاح</label>
-                            {isLoadingSupervisors ? (
+                            {isLoadingAvailable ? (
                                 <div className="animate-pulse bg-slate-100 dark:bg-slate-800 h-12 rounded-xl w-full"></div>
                             ) : availableSupervisors.length > 0 ? (
                                 <select 
                                     value={selectedSupervisor} 
                                     onChange={(e) => setSelectedSupervisor(e.target.value)}
-                                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all text-slate-800 dark:text-slate-100"
                                 >
                                     <option value="">-- يرجى اختيار مشرف --</option>
                                     {availableSupervisors.map(sup => (
                                         <option key={sup.userID} value={sup.userID}>
-                                            {sup.fullName} ({sup.departmentName})
+                                            {sup.fullName} ({sup.departmentName}) [الفرق الحالية: {sup.currentTeamsCount}]
                                         </option>
                                     ))}
                                 </select>
@@ -150,10 +128,10 @@ const SupervisorAssignment = () => {
                         </button>
                         <button 
                             onClick={handleAssign}
-                            disabled={!selectedSupervisor || isAssigning}
+                            disabled={!selectedSupervisor || assignSupervisorMutation.isPending}
                             className="px-6 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {isAssigning && <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>}
+                            {assignSupervisorMutation.isPending && <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>}
                             إسناد المشرف
                         </button>
                     </div>
@@ -162,90 +140,137 @@ const SupervisorAssignment = () => {
         );
     };
 
+    const normalizedCollegeSupervisors = Array.isArray(collegeSupervisors) ? collegeSupervisors.map(normalizeSupervisor) : [];
+    const normalizedPendingTeams = Array.isArray(pendingTeams) ? pendingTeams.map(normalizeTeam) : [];
+
     return (
         <div className="max-w-7xl mx-auto w-full pb-10 text-right" dir="rtl">
             <div className="mb-8">
                 <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">إسناد المشرفين</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">إدارة وإسناد المشرفين للفرق المعتمدة.</p>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">إدارة عبء عمل المشرفين وتعيينهم للفرق.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 shadow-sm">
-                    <div className="size-14 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-3xl">pending_actions</span>
-                    </div>
+            {/* SECTION 1: SUPERVISOR WORKLOAD */}
+            <div className="mb-10">
+                <div className="flex justify-between items-center mb-6">
                     <div>
-                        <p className="text-sm font-bold text-slate-500">فرق بانتظار التعيين</p>
-                        <p className="text-2xl font-black text-slate-900 dark:text-white">{pendingTeams.length}</p>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">عبء عمل المشرفين في الكلية</h2>
+                        <p className="text-sm text-slate-400 mt-1">يعرض عدد الفرق النشطة الحالية لكل مشرف بالكلية للمساعدة في توزيع المهام بعدالة.</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 shadow-sm">
-                    <div className="size-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-3xl">how_to_reg</span>
+
+                {isLoadingSupervisors ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {Array(8).fill(0).map((_, i) => (
+                            <div key={i} className="animate-pulse bg-white dark:bg-slate-900 h-14 rounded-2xl border border-slate-200 dark:border-slate-800"></div>
+                        ))}
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-slate-500">جاهزية الإسناد</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">اختر فريقاً لعرض المشرفين المتاحين</p>
+                ) : isErrorSupervisors ? (
+                    <div className="p-6 text-center text-red-500 font-bold bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/50">
+                        تعذر تحميل عبء عمل المشرفين
                     </div>
-                </div>
+                ) : normalizedCollegeSupervisors.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {normalizedCollegeSupervisors.map((supervisor) => (
+                            <div 
+                                key={supervisor.userID} 
+                                className="bg-white dark:bg-slate-900 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow transition-all flex items-center justify-between gap-3 min-w-0"
+                            >
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                        <span className="material-symbols-outlined text-lg">person</span>
+                                    </div>
+                                    <span className="font-bold text-slate-900 dark:text-white text-sm truncate" title={supervisor.fullName}>
+                                        {supervisor.fullName}
+                                    </span>
+                                </div>
+                                
+                                <span className={`px-2.5 py-1 rounded-xl text-xs font-bold tabular-nums shrink-0 whitespace-nowrap ${
+                                    supervisor.currentTeamsCount === 0 ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                    supervisor.currentTeamsCount >= 4 ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200/50 dark:border-red-900/50' :
+                                    'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/50'
+                                }`}>
+                                    {supervisor.currentTeamsCount} {supervisor.currentTeamsCount === 1 ? 'فريق' : supervisor.currentTeamsCount === 2 ? 'فريقان' : 'فرق'}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="p-8 text-center text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        لا يوجد مشرفون مسجلون في الكلية حالياً.
+                    </div>
+                )}
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">قائمة الفرق بانتظار المشرف</h2>
+            {/* SECTION 2: TEAMS REQUIRING ASSIGNMENT */}
+            <div>
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">الفرق بانتظار إسناد مشرف</h2>
+                        <p className="text-sm text-slate-400 mt-1">الفرق المعتمدة في قسمك والتي تتطلب تعيين مشرف أكاديمي للبدء بالمشروع.</p>
+                    </div>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-right border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">اسم الفريق</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">القسم</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">قائد الفريق</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">الأعضاء</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-left">الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {isLoadingTeams ? (
-                                Array(3).fill(0).map((_, i) => (
-                                    <tr key={i} className="animate-pulse">
-                                        <td colSpan="5" className="px-6 py-4 text-center text-slate-400">جاري تحميل الفرق...</td>
-                                    </tr>
-                                ))
-                            ) : pendingTeams.length > 0 ? (
-                                pendingTeams.map((team) => (
-                                    <tr key={team.teamID} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{team.teamName}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{team.departmentName}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{team.leaderName}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-xs font-bold px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg">{team.memberCount}</span>
-                                        </td>
-                                        <td className="px-6 py-4 text-left">
-                                            <button
-                                                onClick={() => handleOpenModal(team)}
-                                                className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 inline-flex"
-                                            >
-                                                <span className="material-symbols-outlined text-[16px]">assignment_ind</span>
-                                                إسناد مشرف
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className="px-6 py-10 text-center text-slate-400">لا توجد فرق بانتظار إسناد مشرف</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+
+                {isLoadingTeams ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="animate-pulse bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 h-48"></div>
+                        ))}
+                    </div>
+                ) : isErrorTeams ? (
+                    <div className="p-6 text-center text-red-500 font-bold bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/50">
+                        تعذر تحميل الفرق بانتظار المشرفين
+                    </div>
+                ) : normalizedPendingTeams.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {normalizedPendingTeams.map((team) => (
+                            <div 
+                                key={team.teamID} 
+                                className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                            >
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-black text-slate-900 dark:text-white">{team.teamName}</h3>
+                                        <span className="px-2.5 py-1 text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full border border-amber-100 dark:border-amber-900/50">
+                                            بانتظار مشرف
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3 text-sm">
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400 text-xs">قائد الفريق:</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-300">{team.leaderName || 'غير متوفر'}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400 text-xs">القسم:</span>
+                                            <span className="font-semibold text-slate-600 dark:text-slate-400">{team.departmentName}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400 text-xs">عدد الأعضاء:</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-300 tabular-nums">{team.memberCount} أعضاء</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                    <button
+                                        onClick={() => handleOpenModal(team)}
+                                        className="w-full py-2.5 bg-primary text-white hover:bg-primary/95 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">assignment_ind</span>
+                                        إسناد مشرف للفريق
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="p-12 text-center text-slate-400 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <span className="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-600 mb-2">check_circle</span>
+                        <p className="text-base font-bold">لا توجد فرق بانتظار إسناد مشرف حالياً.</p>
+                        <p className="text-xs text-slate-400 mt-1">لقد تم تعيين مشرفين لجميع الفرق المعتمدة.</p>
+                    </div>
+                )}
             </div>
 
             <AssignmentModal />

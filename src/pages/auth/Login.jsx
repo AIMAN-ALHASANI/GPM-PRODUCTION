@@ -17,7 +17,8 @@ const Login = () => {
     setIsLoading(true);
     try {
       const user = await login(email, password);
-      toast.success(`مرحباً بك، ${user.name || user.fullName || 'مستخدم'}`);
+      const displayName = user?.fullName || user?.name || '';
+      toast.success(displayName ? `مرحباً ${displayName}` : 'مرحباً');
       switch (user.role) {
         case 'SuperAdmin': navigate('/superadmin/dashboard'); break;
         case 'Admin': navigate('/admin/dashboard'); break;
