@@ -75,11 +75,12 @@ const MyProfile = React.lazy(() => import('../pages/shared/MyProfile'));
 const NotificationsPage = React.lazy(() => import('../pages/NotificationsPage'));
 
 import Navbar from '../components/navbar/Navbar';
+import { MobileNavProvider } from '../context/MobileNavContext';
 
 const SharedLayout = () => (
   <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
     <Navbar />
-    <main className="flex-1 flex flex-col min-w-0 p-6 lg:p-10 overflow-y-auto page-enter">
+    <main className="flex-1 flex flex-col min-w-0 p-4 sm:p-6 lg:p-10 overflow-y-auto page-enter">
       <Outlet />
     </main>
   </div>
@@ -114,99 +115,101 @@ const RoleRoute = ({ children, allowedRoles }) => {
 const AppRouter = () => {
   return (
     <BrowserRouter>
-      <Suspense fallback={<GlobalLoader message="جاري التحميل..." />}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/archive" element={<ArchiveProjectsPage />} />
-          <Route path="/archive/:id" element={<ArchiveProjectDetailsPage />} />
+      <MobileNavProvider>
+        <Suspense fallback={<GlobalLoader message="جاري التحميل..." />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/archive" element={<ArchiveProjectsPage />} />
+            <Route path="/archive/:id" element={<ArchiveProjectDetailsPage />} />
 
-          {/* Super Admin Routes */}
-          <Route path="/superadmin" element={<RoleRoute allowedRoles={['SuperAdmin']}><SuperAdminLayout /></RoleRoute>}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<SuperAdminDashboard />} />
-            <Route path="analytics" element={<SuperAdminAnalytics />} />
-            <Route path="activity" element={<SystemActivity />} />
-            <Route path="colleges" element={<CollegesManagement />} />
-            <Route path="admins" element={<AdminManagement />} />
-            <Route path="users" element={<GlobalUsersOverview />} />
-            <Route path="archived-projects" element={<SuperAdminArchivedProjects />} />
-            <Route path="profile" element={<MyProfile />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-          </Route>
+            {/* Super Admin Routes */}
+            <Route path="/superadmin" element={<RoleRoute allowedRoles={['SuperAdmin']}><SuperAdminLayout /></RoleRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<SuperAdminDashboard />} />
+              <Route path="analytics" element={<SuperAdminAnalytics />} />
+              <Route path="activity" element={<SystemActivity />} />
+              <Route path="colleges" element={<CollegesManagement />} />
+              <Route path="admins" element={<AdminManagement />} />
+              <Route path="users" element={<GlobalUsersOverview />} />
+              <Route path="archived-projects" element={<SuperAdminArchivedProjects />} />
+              <Route path="profile" element={<MyProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<RoleRoute allowedRoles={['Admin']}><AdminLayout /></RoleRoute>}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="students" element={<StudentsManagement />} />
-            <Route path="supervisors" element={<SupervisorsManagement />} />
-            <Route path="hods" element={<HeadsOfDepartmentManagement />} />
-            <Route path="departments" element={<DepartmentsManagement />} />
-            <Route path="projects" element={<ProjectsManagement />} />
-            <Route path="teams" element={<TeamsManagement />} />
-            <Route path="team-settings" element={<TeamSettings />} />
-            <Route path="archived-projects" element={<ArchivedProjectsManagement />} />
-            <Route path="project-archive" element={<ProjectArchiveManagement />} />
-            <Route path="users/add" element={<AddNewUser />} />
-            <Route path="projects/archive/add" element={<AddArchiveProject />} />
-            <Route path="profile" element={<MyProfile />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route path="/admin" element={<RoleRoute allowedRoles={['Admin']}><AdminLayout /></RoleRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="students" element={<StudentsManagement />} />
+              <Route path="supervisors" element={<SupervisorsManagement />} />
+              <Route path="hods" element={<HeadsOfDepartmentManagement />} />
+              <Route path="departments" element={<DepartmentsManagement />} />
+              <Route path="projects" element={<ProjectsManagement />} />
+              <Route path="teams" element={<TeamsManagement />} />
+              <Route path="team-settings" element={<TeamSettings />} />
+              <Route path="archived-projects" element={<ArchivedProjectsManagement />} />
+              <Route path="project-archive" element={<ProjectArchiveManagement />} />
+              <Route path="users/add" element={<AddNewUser />} />
+              <Route path="projects/archive/add" element={<AddArchiveProject />} />
+              <Route path="profile" element={<MyProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
 
-          {/* HOD Routes */}
-          <Route path="/hod" element={<RoleRoute allowedRoles={['HeadOfDepartment']}><HODLayout /></RoleRoute>}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<HODDashboard />} />
-            <Route path="supervisor-assignment" element={<SupervisorAssignment />} />
-            <Route path="projects" element={<HODProjectsOverview />} />
-            <Route path="projects/:id" element={<HODProjectDetails />} />
-            <Route path="proposals" element={<HODProposals />} />
-            <Route path="proposals/:id" element={<HODProposalDetails />} />
-            <Route path="requests" element={<HODRequests />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="profile" element={<MyProfile />} />
-          </Route>
+            {/* HOD Routes */}
+            <Route path="/hod" element={<RoleRoute allowedRoles={['HeadOfDepartment']}><HODLayout /></RoleRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<HODDashboard />} />
+              <Route path="supervisor-assignment" element={<SupervisorAssignment />} />
+              <Route path="projects" element={<HODProjectsOverview />} />
+              <Route path="projects/:id" element={<HODProjectDetails />} />
+              <Route path="proposals" element={<HODProposals />} />
+              <Route path="proposals/:id" element={<HODProposalDetails />} />
+              <Route path="requests" element={<HODRequests />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<MyProfile />} />
+            </Route>
 
-          {/* Student Routes */}
-          <Route path="/student" element={<RoleRoute allowedRoles={['Student']}><StudentLayout /></RoleRoute>}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<StudentDashboard />} />
-            <Route path="team" element={<StudentMyTeam />} />
-            <Route path="project" element={<StudentProjectDetails />} />
-            <Route path="tasks" element={<StudentMyTasks />} />
-            <Route path="tasks/:id" element={<StudentTaskDetails />} />
-            <Route path="team/management" element={<StudentLeaderTeamManagement />} />
-            <Route path="proposals" element={<StudentProposals />} />
-            <Route path="proposals/create" element={<StudentCreateProposal />} />
-            <Route path="proposals/:id" element={<StudentProposalDetails />} />
-            <Route path="reports" element={<StudentReports />} />
-            <Route path="reports/:id" element={<StudentReportDetails />} />
-            <Route path="meetings" element={<StudentMeetings />} />
-            <Route path="meetings/schedule" element={<StudentScheduleMeeting />} />
-            <Route path="profile" element={<MyProfile />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-          </Route>
+            {/* Student Routes */}
+            <Route path="/student" element={<RoleRoute allowedRoles={['Student']}><StudentLayout /></RoleRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<StudentDashboard />} />
+              <Route path="team" element={<StudentMyTeam />} />
+              <Route path="project" element={<StudentProjectDetails />} />
+              <Route path="tasks" element={<StudentMyTasks />} />
+              <Route path="tasks/:id" element={<StudentTaskDetails />} />
+              <Route path="team/management" element={<StudentLeaderTeamManagement />} />
+              <Route path="proposals" element={<StudentProposals />} />
+              <Route path="proposals/create" element={<StudentCreateProposal />} />
+              <Route path="proposals/:id" element={<StudentProposalDetails />} />
+              <Route path="reports" element={<StudentReports />} />
+              <Route path="reports/:id" element={<StudentReportDetails />} />
+              <Route path="meetings" element={<StudentMeetings />} />
+              <Route path="meetings/schedule" element={<StudentScheduleMeeting />} />
+              <Route path="profile" element={<MyProfile />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
 
-          {/* Supervisor Routes */}
-          <Route path="/supervisor" element={<RoleRoute allowedRoles={['Supervisor']}><SupervisorLayout /></RoleRoute>}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<SupervisorDashboard />} />
-            <Route path="meetings" element={<SupervisorMeetings />} />
-            <Route path="reports" element={<SupervisorReports />} />
-            <Route path="projects" element={<SupervisorProjects />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="profile" element={<MyProfile />} />
-          </Route>
+            {/* Supervisor Routes */}
+            <Route path="/supervisor" element={<RoleRoute allowedRoles={['Supervisor']}><SupervisorLayout /></RoleRoute>}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<SupervisorDashboard />} />
+              <Route path="meetings" element={<SupervisorMeetings />} />
+              <Route path="reports" element={<SupervisorReports />} />
+              <Route path="projects" element={<SupervisorProjects />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<MyProfile />} />
+            </Route>
 
-          {/* Shared Routes */}
-          <Route element={<RoleRoute><SharedLayout /></RoleRoute>}>
-            <Route path="/notifications" element={<NotificationsPage />} />
-          </Route>
+            {/* Shared Routes */}
+            <Route element={<RoleRoute><SharedLayout /></RoleRoute>}>
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
 
-        </Routes>
-      </Suspense>
+          </Routes>
+        </Suspense>
+      </MobileNavProvider>
     </BrowserRouter>
   );
 };

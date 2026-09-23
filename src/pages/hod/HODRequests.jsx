@@ -77,9 +77,10 @@ const HODRequests = () => {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                <table className="w-full text-right border-collapse">
-                    <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[700px] text-right border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">نوع الطلب</th>
                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">اسم الطالب</th>
                             <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">اسم الفريق</th>
@@ -182,12 +183,13 @@ const HODRequests = () => {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
 
             {selectedRequest && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up text-right" dir="rtl">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-row-reverse">
+                    <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up text-right max-h-[90vh] flex flex-col" dir="rtl">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-row-reverse shrink-0">
                             <div className="flex items-center gap-2 text-primary">
                                 <span className="material-symbols-outlined">assignment_late</span>
                                 <h3 className="text-lg font-black text-slate-900 dark:text-white"> تفاصيل طلب {getRequestTypeLabel(selectedRequest.requestType)} </h3>
@@ -196,8 +198,8 @@ const HODRequests = () => {
                                 <span className="material-symbols-outlined text-slate-400">close</span>
                             </button>
                         </div>
-                        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                                     <span className="text-xs text-slate-400 block mb-1">نوع الطلب</span>
                                     <span className="text-sm font-black text-slate-900 dark:text-white">{getRequestTypeLabel(selectedRequest.requestType)}</span>
