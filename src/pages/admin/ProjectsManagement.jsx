@@ -76,6 +76,10 @@ const ProjectsManagement = () => {
     const displayProjects = searchResults || projects;
 
     const filteredProjects = displayProjects.filter(project => {
+        const status = (project.status || project.Status || '').toLowerCase();
+        if (status === 'pending' || status === 'candidate') {
+            return false;
+        }
         const matchesDept = selectedDepartment === 'جميع الأقسام' || project.departmentName === selectedDepartment;
         return matchesDept;
     });

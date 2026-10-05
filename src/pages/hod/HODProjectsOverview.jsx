@@ -24,6 +24,12 @@ const HODProjectsOverview = () => {
     }));
 
     const displayProjects = normalizedProjects.filter(project => {
+        // Exclude Candidate / Pending projects
+        const status = (project.status || '').toLowerCase();
+        if (status === 'pending' || status === 'candidate') {
+            return false;
+        }
+
         // Search filter
         const term = searchTerm.toLowerCase().trim();
         const matchesSearch = term.length === 0 || (
@@ -45,7 +51,7 @@ const HODProjectsOverview = () => {
         return matchesSearch && matchesStatus && matchesSupervisor;
     });
 
-    const statusOptions = ["All", "Pending", "Active", "InActive", "Approved", "InProgress", "Completed", "Archived", "Rejected"];
+    const statusOptions = ["All", "Active", "InActive", "Approved", "InProgress", "Completed", "Archived", "Rejected"];
 
     const ProjectDetailsModal = ({ project, onClose }) => {
         if (!project) return null;

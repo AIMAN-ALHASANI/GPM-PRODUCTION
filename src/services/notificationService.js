@@ -28,7 +28,33 @@ const notificationService = {
   getUnreadCount: async () => {
     const response = await apiClient.get('/Notifications/unread-count');
     return response.data;
-  }
+  },
+
+  // ── HOD-specific calls ───────────────────────────────────────────────────────
+
+  /** POST /Notifications/hod/send — HOD sends a notification */
+  hodSendNotification: async (dto) => {
+    const response = await apiClient.post('/Notifications/hod/send', dto);
+    return response.data;
+  },
+
+  /** GET /Notifications/hod/sent — notifications sent by this HOD */
+  hodGetSentNotifications: async () => {
+    const response = await apiClient.get('/Notifications/hod/sent');
+    return response.data;
+  },
+
+  /** GET /Notifications/hod/teams — HOD's department teams for dropdown */
+  hodGetDepartmentTeams: async () => {
+    const response = await apiClient.get('/Notifications/hod/teams');
+    return response.data;
+  },
+
+  /** GET /Notifications/hod/supervisors — HOD's department supervisors for dropdown */
+  hodGetDepartmentSupervisors: async () => {
+    const response = await apiClient.get('/Notifications/hod/supervisors');
+    return response.data;
+  },
 };
 
 export default notificationService;

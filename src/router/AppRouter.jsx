@@ -48,6 +48,7 @@ const HODProposalDetails = React.lazy(() => import('../pages/hod/HODProposalDeta
 const HODProjectDetails = React.lazy(() => import('../pages/hod/HODProjectDetails'));
 const HODRequests = React.lazy(() => import('../pages/hod/HODRequests'));
 const SupervisorAssignment = React.lazy(() => import('../pages/hod/SupervisorAssignment'));
+const HODNotificationsPage = React.lazy(() => import('../pages/hod/HODNotificationsPage'));
 
 // Student Pages
 const StudentDashboard = React.lazy(() => import('../pages/student/Dashboard'));
@@ -167,7 +168,7 @@ const AppRouter = () => {
               <Route path="proposals" element={<HODProposals />} />
               <Route path="proposals/:id" element={<HODProposalDetails />} />
               <Route path="requests" element={<HODRequests />} />
-              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="notifications" element={<HODNotificationsPage />} />
               <Route path="profile" element={<MyProfile />} />
             </Route>
 

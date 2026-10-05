@@ -1,25 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-    useCollegeTeams, 
-    useUpdateTeamStatus, 
-    useDeleteTeam,
-    useCreateTeam,
-    useUpdateTeam,
-    useTeamMembers,
-    useAddTeamMember,
-    useRemoveTeamMember,
-    useAssignTeamLeader 
+    useCollegeTeams,
 } from '../../hooks/useTeams';
 import TeamDetailsModal from '../../components/admin/TeamDetailsModal';
 
 const TeamsManagement = () => {
     const { data: teamsData, isLoading, isError } = useCollegeTeams();
-    const updateStatusMutation = useUpdateTeamStatus();
-    const deleteMutation = useDeleteTeam();
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState('جميع الحالات');
+    const [selectedStatus, setSelectedStatus] = useState('قيد الانتظار');
     const [selectedTeamId, setSelectedTeamId] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -156,7 +146,7 @@ const TeamsManagement = () => {
                                 </div>
                             </div>
                             
-                            <div className="p-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div className="p-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-start">
                                 <button 
                                     onClick={(e) => handleViewDetails(e, team.teamID)}
                                     className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
@@ -164,22 +154,6 @@ const TeamsManagement = () => {
                                     عرض التفاصيل
                                     <span className="material-symbols-outlined text-sm">arrow_left</span>
                                 </button>
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => updateStatusMutation.mutate({ teamId: team.teamID, statusData: { Status: 1 } })}
-                                        className="size-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors"
-                                        title="تفعيل"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">check_circle</span>
-                                    </button>
-                                    <button 
-                                        onClick={() => deleteMutation.mutate(team.teamID)}
-                                        className="size-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-100 transition-colors"
-                                        title="حذف"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">delete</span>
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     ))}

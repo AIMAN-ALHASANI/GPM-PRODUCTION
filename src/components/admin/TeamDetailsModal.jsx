@@ -1,10 +1,28 @@
 import React from 'react';
-import { useTeamDetails } from '../../hooks/useTeams';
+import { useTeamDetails, useUpdateTeamStatus } from '../../hooks/useTeams';
+import toast from 'react-hot-toast';
 
 const TeamDetailsModal = ({ isOpen, onClose, teamId }) => {
     const { data: team, isLoading, isError } = useTeamDetails(teamId);
+    const updateStatusMutation = useUpdateTeamStatus();
 
     if (!isOpen) return null;
+
+    const isAlreadyActive = team?.status === 1 || team?.status === 'Approved' || team?.status === 'Active';
+
+    const handleApprove = () => {
+        updateStatusMutation.mutate(
+            { teamId, statusData: { Status: 1 } },
+            {
+                onSuccess: () => {
+                    onClose();
+                },
+                onError: () => {
+                    toast.error('فشل تفعيل الفريق. يرجى المحاولة مرة أخرى.');
+                },
+            }
+        );
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -52,10 +70,10 @@ const TeamDetailsModal = ({ isOpen, onClose, teamId }) => {
                                     <h3 className="text-2xl font-black text-slate-900 dark:text-white">{teamName || 'بدون اسم'}</h3>
                                     <div className="flex items-center justify-center gap-2 mt-2">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                            status === 'Approved' || status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 
-                                            status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+                                            status === 'Approved' || status === 'Active' || status === 1 ? 'bg-emerald-100 text-emerald-700' : 
+                                            status === 'Pending' || status === 0 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
                                         }`}>
-                                            {status === 'Approved' ? 'نشط' : status === 'Pending' ? 'قيد الانتظار' : status || 'معلق'}
+                                            {status === 'Approved' || status === 1 ? 'نشط' : status === 'Pending' || status === 0 ? 'قيد الانتظار' : status || 'معلق'}
                                         </span>
                                         <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-bold">
                                             الحد الأقصى للأعضاء: {memberLimit || 0}
@@ -149,13 +167,38 @@ const TeamDetailsModal = ({ isOpen, onClose, teamId }) => {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                    <button 
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                    <button
                         onClick={onClose}
-                        className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20"
+                        className="px-8 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
                     >
                         إغلاق
                     </button>
+                    {!isLoading && !isError && !isAlreadyActive && (
+                        <button
+                            onClick={handleApprove}
+                            disabled={updateStatusMutation.isPending}
+                            className="px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {updateStatusMutation.isPending ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>جاري التفعيل...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                                    <span>تفعيل الفريق</span>
+                                </>
+                            )}
+                        </button>
+                    )}
+                    {!isLoading && !isError && isAlreadyActive && (
+                        <span className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-bold flex items-center gap-2 border border-emerald-200">
+                            <span className="material-symbols-outlined text-lg">verified</span>
+                            الفريق نشط
+                        </span>
+                    )}
                 </div>
             </div>
         </div>
@@ -163,3 +206,4 @@ const TeamDetailsModal = ({ isOpen, onClose, teamId }) => {
 };
 
 export default TeamDetailsModal;
+
