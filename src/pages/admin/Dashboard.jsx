@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useCollegeStudents, useCollegeSupervisors, useCollegeHODs } from '../../hooks/useUsers';
 import { useCollegeProjects } from '../../hooks/useProjects';
 import { dashboardService } from '../../services/dashboardService';
+import notificationService from '../../services/notificationService';
 import StatusBadge from '../../components/common/StatusBadge';
 import GlobalLoader from '../../components/common/GlobalLoader';
 import { formatNumber } from '../../utils/formatNumber';
+import AdminCreateNotificationModal from '../../components/admin/AdminCreateNotificationModal';
 
 // ── Animated Counter Hook ──────────────────────────────────────────────────────
 function useAnimatedCounter(target, duration = 900) {
@@ -56,6 +60,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }) => {
 };
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const { data: studentsRes } = useCollegeStudents();
     const { data: supervisorsRes } = useCollegeSupervisors();
     const { data: hodsRes } = useCollegeHODs();
@@ -68,6 +73,24 @@ const Dashboard = () => {
     const [archivedProjectsCount, setArchivedProjectsCount] = useState(0);
     const [isLoadingCards, setIsLoadingCards] = useState(true);
     const [cardsError, setCardsError] = useState(null);
+    const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+
+    // Fetch sent notifications for the dashboard notification management section
+    const {
+        data: rawSentNotifications,
+        refetch: refetchSentNotifications
+    } = useQuery({
+        queryKey: ['admin-sent-notifications'],
+        queryFn: notificationService.adminGetSentNotifications,
+        staleTime: 30_000,
+    });
+
+    const sentNotifications = (() => {
+        if (Array.isArray(rawSentNotifications)) return rawSentNotifications;
+        if (Array.isArray(rawSentNotifications?.data)) return rawSentNotifications.data;
+        if (Array.isArray(rawSentNotifications?.data?.data)) return rawSentNotifications.data.data;
+        return [];
+    })();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -86,7 +109,6 @@ const Dashboard = () => {
                 setArchivedProjectsCount(archived.length);
             } catch (err) {
                 setCardsError('فشل في تحميل إحصائيات لوحة القيادة');
-                // Real server error — UI already shows cardsError banner
             } finally {
                 setIsLoadingCards(false);
             }
@@ -184,6 +206,62 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Notification Management Section */}
+            <div className="mt-10 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-premium">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                            <span className="material-symbols-outlined text-2xl">campaign</span>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">إشعارات الكلية</h3>
+                            <p className="text-xs text-slate-500">إرسال تنبيهات وتوجيهات لكافة الأقسام والمشرفين والفرق التابعة للكلية</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/admin/notifications')}
+                            className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        >
+                            سجل الإشعارات
+                        </button>
+                        <button
+                            onClick={() => setIsNotificationModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+                        >
+                            <span className="material-symbols-outlined text-sm">add</span>
+                            إنشاء إشعار للكلية
+                        </button>
+                    </div>
+                </div>
+
+                <div className="pt-4">
+                    {sentNotifications.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {sentNotifications.slice(0, 3).map((n) => (
+                                <div key={n.notificationID ?? n.NotificationID} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800 flex flex-col justify-between gap-2">
+                                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-2">{n.message ?? n.Message}</p>
+                                    <div className="flex items-center justify-between text-[10px] text-slate-400 pt-2 border-t border-slate-200/40 dark:border-slate-700">
+                                        <span className="font-semibold text-primary">{n.recipientName ?? n.RecipientName}</span>
+                                        <span>{n.createdAt ? new Date(n.createdAt).toLocaleDateString('ar-EG') : ''}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 text-slate-400 text-sm">
+                            لم يتم إرسال أي إشعار للكلية بعد. يمكنك إنشاء إشعار عبر الزر أعلاه.
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <AdminCreateNotificationModal
+                isOpen={isNotificationModalOpen}
+                onClose={() => setIsNotificationModalOpen(false)}
+                onSuccess={() => refetchSentNotifications()}
+            />
         </div>
     );
 };

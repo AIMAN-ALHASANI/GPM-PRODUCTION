@@ -39,6 +39,7 @@ const ProjectArchiveManagement = React.lazy(() => import('../pages/admin/Project
 const TeamSettings = React.lazy(() => import('../pages/admin/TeamSettings'));
 const AddNewUser = React.lazy(() => import('../pages/admin/AddNewUser'));
 const AddArchiveProject = React.lazy(() => import('../pages/admin/AddArchiveProject'));
+const AdminNotificationsPage = React.lazy(() => import('../pages/admin/AdminNotificationsPage'));
 
 // HOD Pages
 const HODDashboard = React.lazy(() => import('../pages/hod/HODDashboard'));
@@ -70,6 +71,7 @@ const SupervisorDashboard = React.lazy(() => import('../pages/supervisor/Supervi
 const SupervisorMeetings = React.lazy(() => import('../pages/supervisor/SupervisorMeetings'));
 const SupervisorReports = React.lazy(() => import('../pages/supervisor/SupervisorReports'));
 const SupervisorProjects = React.lazy(() => import('../pages/supervisor/SupervisorProjects'));
+const SupervisorNotificationsPage = React.lazy(() => import('../pages/supervisor/SupervisorNotificationsPage'));
 
 // Shared Pages
 const MyProfile = React.lazy(() => import('../pages/shared/MyProfile'));
@@ -87,27 +89,23 @@ const SharedLayout = () => (
   </div>
 );
 
+// Protected Route Component
 const RoleRoute = ({ children, allowedRoles }) => {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
-  if (isLoading) {
-    return <GlobalLoader message="جاري التحقق من الهوية..." />;
-  }
+  if (loading) return <GlobalLoader fullScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
-    const defaultPath = {
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    // Redirect to their default role dashboard
+    const roleRoutes = {
       'SuperAdmin': '/superadmin/dashboard',
       'Admin': '/admin/dashboard',
-      'Student': '/student/dashboard',
+      'HeadOfDepartment': '/hod/dashboard',
       'Supervisor': '/supervisor/dashboard',
-      'HeadOfDepartment': '/hod/dashboard'
-    }[user?.role] || '/';
-
-    return <Navigate to={defaultPath} replace />;
+      'Student': '/student/dashboard',
+    };
+    return <Navigate to={roleRoutes[user?.role] || '/'} replace />;
   }
 
   return children;
@@ -117,7 +115,7 @@ const AppRouter = () => {
   return (
     <BrowserRouter>
       <MobileNavProvider>
-        <Suspense fallback={<GlobalLoader message="جاري التحميل..." />}>
+        <Suspense fallback={<GlobalLoader fullScreen />}>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
@@ -129,11 +127,11 @@ const AppRouter = () => {
             <Route path="/superadmin" element={<RoleRoute allowedRoles={['SuperAdmin']}><SuperAdminLayout /></RoleRoute>}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<SuperAdminDashboard />} />
-              <Route path="analytics" element={<SuperAdminAnalytics />} />
-              <Route path="activity" element={<SystemActivity />} />
               <Route path="colleges" element={<CollegesManagement />} />
               <Route path="admins" element={<AdminManagement />} />
               <Route path="users" element={<GlobalUsersOverview />} />
+              <Route path="activity" element={<SystemActivity />} />
+              <Route path="analytics" element={<SuperAdminAnalytics />} />
               <Route path="archived-projects" element={<SuperAdminArchivedProjects />} />
               <Route path="profile" element={<MyProfile />} />
               <Route path="notifications" element={<NotificationsPage />} />
@@ -155,7 +153,7 @@ const AppRouter = () => {
               <Route path="users/add" element={<AddNewUser />} />
               <Route path="projects/archive/add" element={<AddArchiveProject />} />
               <Route path="profile" element={<MyProfile />} />
-              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="notifications" element={<AdminNotificationsPage />} />
             </Route>
 
             {/* HOD Routes */}
@@ -199,7 +197,7 @@ const AppRouter = () => {
               <Route path="meetings" element={<SupervisorMeetings />} />
               <Route path="reports" element={<SupervisorReports />} />
               <Route path="projects" element={<SupervisorProjects />} />
-              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="notifications" element={<SupervisorNotificationsPage />} />
               <Route path="profile" element={<MyProfile />} />
             </Route>
 

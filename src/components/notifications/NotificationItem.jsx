@@ -69,19 +69,21 @@ const getTypeStyles = (type) => {
   }
 };
 
-const NotificationItem = ({ notification, variant = 'page', onClick }) => {
-  const id = notification.notificationID ?? notification.NotificationID;
-  const type = notification.type ?? notification.Type ?? '';
-  const message = notification.message ?? notification.Message ?? '';
-  const createdAt = notification.createdAt ?? notification.CreatedAt ?? null;
-  const isRead = notification.isRead ?? notification.IsRead ?? false;
+const NotificationItem = ({ notification, item, variant = 'page', onClick, onNotificationClick }) => {
+  const notif = notification || item || {};
+  const id = notif.notificationID ?? notif.NotificationID ?? notif.id;
+  const type = notif.type ?? notif.Type ?? '';
+  const message = notif.message ?? notif.Message ?? '';
+  const createdAt = notif.createdAt ?? notif.CreatedAt ?? null;
+  const isRead = notif.isRead ?? notif.IsRead ?? false;
+  const handleClick = onClick || onNotificationClick;
 
   const styles = getTypeStyles(type);
 
   if (variant === 'dropdown') {
     return (
       <div
-        onClick={() => onClick && onClick(id)}
+        onClick={() => handleClick && handleClick(id, isRead)}
         className="w-full text-right px-4 py-3.5 flex items-start gap-3 transition-colors relative bg-primary/[0.02] dark:bg-primary/[0.05] hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
       >
         {!isRead && (
@@ -116,7 +118,7 @@ const NotificationItem = ({ notification, variant = 'page', onClick }) => {
   // Page layout
   return (
     <div 
-      onClick={() => onClick && onClick(id, isRead)}
+      onClick={() => handleClick && handleClick(id, isRead)}
       className={`group flex items-start gap-6 p-6 rounded-3xl border transition-all duration-300 relative overflow-hidden ${
         isRead 
           ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-80 cursor-default' 

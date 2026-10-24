@@ -4,11 +4,6 @@ const notificationService = {
   /**
    * GET /notifications
    * Returns: NotificationResponseDto[]
-   * Actual fields: { NotificationID, Message, Type, CreatedAt }
-   *
-   * NOTE: isRead, title, id DO NOT EXIST in the backend response.
-   * NOTE: mark-as-read endpoints (PATCH /notifications/:id/read,
-   *       PATCH /notifications/read-all) DO NOT EXIST in the backend.
    */
   getMyNotifications: async () => {
     const response = await apiClient.get('/Notifications');
@@ -55,7 +50,46 @@ const notificationService = {
     const response = await apiClient.get('/Notifications/hod/supervisors');
     return response.data;
   },
+
+  // ── Supervisor-specific calls ────────────────────────────────────────────────
+
+  /** POST /Notifications/supervisor/send — Supervisor sends notification to a supervised team */
+  supervisorSendNotification: async (dto) => {
+    const response = await apiClient.post('/Notifications/supervisor/send', dto);
+    return response.data;
+  },
+
+  /** GET /Notifications/supervisor/teams — Teams supervised by this supervisor */
+  supervisorGetTeams: async () => {
+    const response = await apiClient.get('/Notifications/supervisor/teams');
+    return response.data;
+  },
+
+  /** GET /Notifications/supervisor/sent — Notifications sent by this supervisor */
+  supervisorGetSentNotifications: async () => {
+    const response = await apiClient.get('/Notifications/supervisor/sent');
+    return response.data;
+  },
+
+  // ── College Admin-specific calls ─────────────────────────────────────────────
+
+  /** POST /Notifications/admin/send — College Admin sends notification across college targets */
+  adminSendNotification: async (dto) => {
+    const response = await apiClient.post('/Notifications/admin/send', dto);
+    return response.data;
+  },
+
+  /** GET /Notifications/admin/dropdowns — Recipients dropdown data for college */
+  adminGetDropdowns: async () => {
+    const response = await apiClient.get('/Notifications/admin/dropdowns');
+    return response.data;
+  },
+
+  /** GET /Notifications/admin/sent — Notifications sent by this college admin */
+  adminGetSentNotifications: async () => {
+    const response = await apiClient.get('/Notifications/admin/sent');
+    return response.data;
+  },
 };
 
 export default notificationService;
-

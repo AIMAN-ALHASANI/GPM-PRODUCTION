@@ -77,7 +77,7 @@ const ProjectsManagement = () => {
 
     const filteredProjects = displayProjects.filter(project => {
         const status = (project.status || project.Status || '').toLowerCase();
-        if (status === 'pending' || status === 'candidate') {
+        if (status === 'archived') {
             return false;
         }
         const matchesDept = selectedDepartment === 'جميع الأقسام' || project.departmentName === selectedDepartment;
