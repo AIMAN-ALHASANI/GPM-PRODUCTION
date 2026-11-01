@@ -4,42 +4,7 @@ import { useCollegeHODs, useUpdateUserStatus } from '../../hooks/useUsers';
 import { useDepartments } from '../../hooks/useStructure';
 import CreateUserModal from '../../components/admin/CreateUserModal';
 import EditUserModal from '../../components/admin/EditUserModal';
-
-const ActionMenu = ({ isOpen, onToggle, onClose, isActive, onActivate, onDeactivate, onEdit }) => {
-    return (
-        <div className="relative">
-            <button 
-                onClick={onToggle}
-                className="text-slate-400 hover:text-primary p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-            >
-                <span className="material-symbols-outlined">more_vert</span>
-            </button>
-            {isOpen && (
-                <>
-                    <div className="fixed inset-0 z-40" onClick={onClose}></div>
-                    <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden">
-                        <button 
-                            onClick={() => {
-                                onEdit();
-                                onClose();
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            <span className="material-symbols-outlined text-[16px]">edit</span> تعديل الملف
-                        </button>
-                        <button 
-                            onClick={isActive ? onDeactivate : onActivate}
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${isActive ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'} transition-colors`}
-                        >
-                            <span className="material-symbols-outlined text-[16px]">{isActive ? 'block' : 'check_circle'}</span>
-                            {isActive ? 'تعطيل الحساب' : 'تفعيل الحساب'}
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
+import ActionMenu from '../../components/common/ActionMenu';
 
 const HeadsOfDepartmentManagement = () => {
     const { data: apiResponse, isLoading, isError, refetch } = useCollegeHODs();

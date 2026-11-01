@@ -189,7 +189,7 @@ const SubmitModal = ({ team, onClose, onSuccess }) => {
  * NO: id, createdAt
  */
 const Reports = () => {
-  const { team, hasTeam, isLoading: teamLoading } = useMyTeam();
+  const { team, hasTeam, hasProject, isLoading: teamLoading } = useMyTeam();
   const { user } = useAuth();
 
   const isLeader = team && user && user.fullName === team.LeaderName;
@@ -213,14 +213,38 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    if (!hasTeam) return;
+    if (!hasTeam || !hasProject) return;
     loadReports();
-  }, [hasTeam]);
+  }, [hasTeam, hasProject]);
 
   const isApproved = team?.status?.toLowerCase() === 'approved' || team?.Status?.toLowerCase() === 'approved';
 
   if (teamLoading) return <Spinner />;
   if (!hasTeam)   return <NoTeamGate featureName="رفع التقارير" />;
+  if (!hasProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-6">
+        <div className="w-20 h-20 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+          <span className="material-symbols-outlined text-4xl text-amber-500">lock</span>
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+            صفحة التقارير مقفلة
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-sm">
+            لا يمكن الوصول إلى صفحة التقارير حتى يتم تعيين مشروع رسمي لفريقك.
+          </p>
+        </div>
+        <Link
+          to="/student/dashboard"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all shadow-md shadow-primary/20"
+        >
+          <span className="material-symbols-outlined">arrow_forward</span>
+          العودة للوحة التحكم
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">

@@ -8,7 +8,7 @@ import { useMobileNav } from '../context/MobileNavContext';
 
 const StudentSidebar = () => {
   const { user } = useAuth();
-  const { hasTeam, isApproved, isPending, isLoading } = useMyTeam();
+  const { hasTeam, hasProject, isApproved, isPending, isLoading } = useMyTeam();
   const { isMobileNavOpen, closeMobileNav } = useMobileNav();
 
   const getNavClass = ({ isActive }) =>
@@ -45,18 +45,36 @@ const StudentSidebar = () => {
     '/student/project',
     '/student/tasks',
     '/student/proposals',
-    '/student/reports',
     '/student/meetings',
   ];
 
+  // Routes that need an ASSIGNED PROJECT
+  const requiresProjectRoutes = [
+    '/student/reports',
+  ];
+
   const isLocked = (to) => {
-    if (isLoading) return false;
-    if (requiresTeamRoutes.includes(to))    return !hasTeam;
-    if (requiresApprovalRoutes.includes(to)) return !isApproved;
+    if (requiresProjectRoutes.includes(to)) {
+      if (isLoading) return true;
+      return !hasProject;
+    }
+    if (requiresTeamRoutes.includes(to)) {
+      if (isLoading) return true;
+      return !hasTeam;
+    }
+    if (requiresApprovalRoutes.includes(to)) {
+      if (isLoading) return true;
+      return !isApproved;
+    }
     return false;
   };
 
   const getLockMessage = (to) => {
+    if (requiresProjectRoutes.includes(to)) {
+      if (!hasTeam) return 'يجب أن تنضم إلى فريق أولاً للوصول إلى التقارير';
+      if (!isApproved) return 'هذه الميزة متاحة بعد موافقة الأدمن على فريقك';
+      return 'التقارير متاحة فقط بعد تعيين مشروع لفريقك';
+    }
     if (requiresTeamRoutes.includes(to))
       return 'يجب أن تنضم إلى فريق أولاً للوصول إلى هذه الميزة';
     if (requiresApprovalRoutes.includes(to)) {
@@ -75,10 +93,11 @@ const StudentSidebar = () => {
       {navItems.map(({ to, icon, label, end }) => {
         const locked = isLocked(to);
         const linkTo = locked ? '#' : to;
+        const lockMessage = locked ? getLockMessage(to) : undefined;
         const handleClick = (e) => {
           if (locked) {
             e.preventDefault();
-            toast.error(getLockMessage(to));
+            toast.error(lockMessage);
           } else if (onItemClick) {
             onItemClick();
           }
@@ -89,6 +108,8 @@ const StudentSidebar = () => {
             key={to}
             to={linkTo}
             onClick={handleClick}
+            title={lockMessage}
+            aria-disabled={locked}
             className={({ isActive }) =>
               `${getNavClass({ isActive: isActive && !locked })} ${
                 locked ? 'opacity-50 cursor-not-allowed' : ''

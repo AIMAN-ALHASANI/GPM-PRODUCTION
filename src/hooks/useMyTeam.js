@@ -66,9 +66,14 @@ const useMyTeam = () => {
 
   const isPending = hasTeam && !isApproved && normalizedStatus !== 'Rejected' && normalizedStatus !== 'rejected';
 
+  const hasProject = Boolean(
+    hasTeam && (team?.projectID || team?.ProjectID || team?.projectId || team?.ProjectId)
+  );
+
   return {
     team,
     hasTeam,
+    hasProject,
     isApproved,
     isPending,
     teamStatus: normalizedStatus,

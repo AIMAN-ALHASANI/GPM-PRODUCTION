@@ -42,7 +42,7 @@ const ProjectsManagement = () => {
     const { data: departmentsResponse } = useDepartments();
     
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedDepartment, setSelectedDepartment] = useState('جميع الأقسام');
+    const [selectedDepartment, setSelectedDepartment] = useState('all');
     const [searchResults, setSearchResults] = useState(null);
     const [isSearching, setIsSearching] = useState(false);
     const [selectedProjectTitle, setSelectedProjectTitle] = useState(null);
@@ -53,35 +53,56 @@ const ProjectsManagement = () => {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
-            if (searchTerm) {
+            const term = searchTerm.trim();
+            if (term) {
                 setIsSearching(true);
                 try {
-                    const result = await projectService.getProjectByTitle(searchTerm);
+                    const result = await projectService.getProjectByTitle(term);
                     const data = Array.isArray(result) ? result : (result ? [result] : []);
                     setSearchResults(data);
                 } catch (error) {
-                    console.error("Search failed:", error);
-                    setSearchResults([]);
+                    console.warn("Exact title search failed, falling back to local search:", error);
+                    const localMatches = projects.filter(p => 
+                        (p.title || p.Title || '').toLowerCase().includes(term.toLowerCase())
+                    );
+                    setSearchResults(localMatches);
                 } finally {
                     setIsSearching(false);
                 }
             } else {
                 setSearchResults(null);
             }
-        }, 500);
+        }, 300);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm]);
+    }, [searchTerm, projects]);
 
-    const displayProjects = searchResults || projects;
+    const displayProjects = searchResults !== null ? searchResults : projects;
 
     const filteredProjects = displayProjects.filter(project => {
         const status = (project.status || project.Status || '').toLowerCase();
         if (status === 'archived') {
             return false;
         }
-        const matchesDept = selectedDepartment === 'جميع الأقسام' || project.departmentName === selectedDepartment;
-        return matchesDept;
+
+        if (selectedDepartment !== 'all' && selectedDepartment !== 'جميع الأقسام') {
+            const projectDeptId = project.departmentID ?? project.departmentId ?? project.DepartmentID;
+            const matchesId = projectDeptId != null && String(projectDeptId) === String(selectedDepartment);
+
+            const selectedDeptObj = departments.find(d => 
+                String(d.departmentID ?? d.departmentId ?? d.id) === String(selectedDepartment) ||
+                d.departmentName === selectedDepartment
+            );
+            const matchesName = selectedDeptObj && (
+                (project.departmentName || project.DepartmentName) === selectedDeptObj.departmentName
+            );
+
+            if (!matchesId && !matchesName) {
+                return false;
+            }
+        }
+
+        return true;
     });
 
     const handleViewDetails = (title) => {
@@ -149,10 +170,15 @@ const ProjectsManagement = () => {
                                 onChange={(e) => setSelectedDepartment(e.target.value)}
                                 className="w-full text-sm border-slate-200 dark:border-slate-700 dark:bg-slate-800 rounded-lg focus:ring-primary focus:border-primary px-3 py-3 outline-none"
                             >
-                                <option value="جميع الأقسام">جميع الأقسام</option>
-                                {departments.map((dept) => (
-                                    <option key={dept.departmentID} value={dept.departmentName}>{dept.departmentName}</option>
-                                ))}
+                                <option value="all">جميع الأقسام</option>
+                                {departments.map((dept) => {
+                                    const deptId = dept.departmentID ?? dept.departmentId ?? dept.id;
+                                    return (
+                                        <option key={deptId} value={String(deptId)}>
+                                            {dept.departmentName}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
                     </div>

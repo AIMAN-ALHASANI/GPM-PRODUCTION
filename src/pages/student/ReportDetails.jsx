@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import reportService from '../../services/reportService';
+import useMyTeam from '../../hooks/useMyTeam';
 
 const Spinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -35,11 +36,16 @@ const getReportTypeLabel = (type) => {
 
 const ReportDetails = () => {
   const { id } = useParams();
+  const { hasTeam, hasProject, isLoading: teamLoading } = useMyTeam();
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (!hasTeam || !hasProject) {
+      setIsLoading(false);
+      return;
+    }
     const load = async () => {
       setIsLoading(true);
       try {
@@ -55,9 +61,20 @@ const ReportDetails = () => {
       }
     };
     load();
-  }, [id]);
+  }, [id, hasTeam, hasProject]);
 
-  if (isLoading) return <Spinner />;
+  if (teamLoading || isLoading) return <Spinner />;
+
+  if (!hasTeam || !hasProject) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <span className="material-symbols-outlined text-5xl text-amber-500">lock</span>
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">صفحة التقارير مقفلة</h2>
+        <p className="text-slate-500">الوصول للتقارير متاح فقط بعد تعيين مشروع لفريقك.</p>
+        <Link to="/student/dashboard" className="text-primary font-bold text-sm hover:underline">← العودة للوحة التحكم</Link>
+      </div>
+    );
+  }
 
   if (error) return (
     <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 text-sm">{error}</div>
