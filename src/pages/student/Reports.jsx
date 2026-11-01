@@ -369,8 +369,13 @@ const Reports = () => {
                     </div>
 
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between mt-auto">
-                      <div className="text-xs text-slate-500 max-w-[60%] truncate" title={report.feedback}>
-                        {report.feedback ? `ملاحظات: ${report.feedback}` : 'لا توجد ملاحظات'}
+                      <div className="text-xs text-slate-500 max-w-[60%] flex items-center gap-1.5 truncate">
+                        <span className="truncate" title={report.feedback}>
+                          {report.feedback ? `ملاحظات: ${report.feedback}` : 'لا توجد ملاحظات'}
+                        </span>
+                        {(report.supervisorFileUrl || report.SupervisorFileUrl) && (
+                          <span className="material-symbols-outlined text-sm text-primary flex-shrink-0" title="يوجد ملف مرفق من المشرف">attachment</span>
+                        )}
                       </div>
                       <Link
                         to={`/student/reports/${report.reportID}`}

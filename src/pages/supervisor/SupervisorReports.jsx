@@ -13,7 +13,7 @@ const SupervisorReports = () => {
   const addFeedbackMutation = useAddReportFeedback();
 
   const [selectedReport, setSelectedReport] = useState(null);
-  const [feedbackData, setFeedbackData] = useState({ Feedback: '', Status: 'Reviewed' });
+  const [feedbackData, setFeedbackData] = useState({ Feedback: '', SupervisorFileUrl: '', Status: 'Reviewed' });
   const [viewDescriptionReport, setViewDescriptionReport] = useState(null);
 
   const isValidTeam = teamIdFromUrl && Array.isArray(teams) && teams.some(t => t.teamID === parseInt(teamIdFromUrl));
@@ -22,6 +22,7 @@ const SupervisorReports = () => {
     setSelectedReport(report);
     setFeedbackData({ 
       Feedback: report.feedback || report.Feedback || '', 
+      SupervisorFileUrl: report.supervisorFileUrl || report.SupervisorFileUrl || '',
       Status: report.status || report.Status || 'Reviewed' 
     });
   };
@@ -36,15 +37,26 @@ const SupervisorReports = () => {
 
   const handleAddFeedback = (e) => {
     e.preventDefault();
-    if (!feedbackData.Feedback.trim()) {
-      toast.error('يرجى إضافة التغذية الراجعة');
-      return;
+
+    const trimmedUrl = feedbackData.SupervisorFileUrl?.trim();
+    if (trimmedUrl) {
+      try {
+        const parsed = new URL(trimmedUrl);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+          toast.error('رابط الملف يجب أن يبدأ بـ http:// أو https://');
+          return;
+        }
+      } catch {
+        toast.error('يرجى إدخال رابط ملف صالح');
+        return;
+      }
     }
 
     addFeedbackMutation.mutate({
       reportId: selectedReport.reportID,
       payload: {
-        Feedback: feedbackData.Feedback,
+        Feedback: feedbackData.Feedback || '',
+        SupervisorFileUrl: trimmedUrl || null,
         Status: feedbackData.Status
       }
     }, {
@@ -170,7 +182,25 @@ const SupervisorReports = () => {
                   {feedback && (
                     <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800">
                       <p className="text-[10px] font-bold text-slate-400">ملاحظاتك السابقة:</p>
-                      <p className="text-xs font-semibold text-slate-600 dark:text-slate-350 mt-0.5">{feedback}</p>
+                      <p className="text-xs font-semibold text-slate-600 dark:text-slate-350 mt-0.5 whitespace-pre-wrap">{feedback}</p>
+                    </div>
+                  )}
+
+                  {(report.supervisorFileUrl || report.SupervisorFileUrl) && (
+                    <div className="mt-2 flex items-center justify-between p-2.5 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20 text-xs">
+                      <span className="font-bold text-primary flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-base">attachment</span>
+                        ملف ملاحظاتك المرفق
+                      </span>
+                      <a
+                        href={report.supervisorFileUrl || report.SupervisorFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline font-bold flex items-center gap-1"
+                      >
+                        فتح الرابط
+                        <span className="material-symbols-outlined text-xs">open_in_new</span>
+                      </a>
                     </div>
                   )}
                 </div>
@@ -227,14 +257,41 @@ const SupervisorReports = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">التغذية الراجعة</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">التغذية الراجعة</label>
+                  <span className="text-[11px] text-slate-400 font-normal">اختياري</span>
+                </div>
                 <textarea 
                   value={feedbackData.Feedback}
                   onChange={(e) => setFeedbackData({ ...feedbackData, Feedback: e.target.value })}
-                  rows="5"
+                  rows="4"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all resize-none"
                   placeholder="اكتب ملاحظاتك وتقييمك للتقرير هنا..."
                 ></textarea>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    رابط ملف المشرف
+                  </label>
+                  <span className="text-[11px] text-slate-400 font-normal">اختياري</span>
+                </div>
+                <div className="relative">
+                  <span className="absolute top-1/2 left-3 -translate-y-1/2 material-symbols-outlined text-slate-400 text-base pointer-events-none">
+                    link
+                  </span>
+                  <input 
+                    type="url"
+                    value={feedbackData.SupervisorFileUrl}
+                    onChange={(e) => setFeedbackData({ ...feedbackData, SupervisorFileUrl: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-sm focus:ring-2 focus:ring-primary/50 outline-none transition-all text-left"
+                    placeholder="https://drive.google.com/..."
+                    dir="ltr"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  يمكنك وضع رابط لملاحظات أو ملف مصحح (Google Drive، OneDrive...). يمكن تركه فارغاً.
+                </p>
               </div>
               <button 
                 type="submit"

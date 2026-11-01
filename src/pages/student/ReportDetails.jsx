@@ -122,9 +122,9 @@ const ReportDetails = () => {
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap break-words overflow-wrap-break-word">{report.description || '—'}</p>
           </div>
 
-          {/* File */}
+          {/* Student Submitted File */}
           <div>
-            <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">الملف المرفق</p>
+            <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-3">ملف التقرير المرفق من الفريق</p>
             {report.filePath ? (
               <a
                 href={report.filePath}
@@ -133,26 +133,46 @@ const ReportDetails = () => {
                 className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-primary hover:bg-primary/10 transition-all"
               >
                 <span className="material-symbols-outlined text-base">link</span>
-                فتح الملف
+                فتح ملف الفريق
+                <span className="material-symbols-outlined text-xs">open_in_new</span>
               </a>
             ) : (
-              <p className="text-sm text-slate-400 font-medium">لا يوجد ملف مرفق</p>
+              <p className="text-sm text-slate-400 font-medium">لا يوجد ملف مرفق من الفريق</p>
             )}
           </div>
 
-          {/* Supervisor Feedback */}
+          {/* Supervisor Feedback & Attached File */}
           <div>
-            <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">تعليقات المشرف</p>
-            <div className={`border rounded-xl p-4 ${
+            <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">تعليقات وملاحظات المشرف</p>
+            <div className={`border rounded-xl p-5 space-y-4 ${
               report.status?.toLowerCase() === 'approved'
                 ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800'
                 : report.status?.toLowerCase() === 'rejected'
                 ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
                 : 'bg-primary/5 dark:bg-primary/10 border-primary/20'
             }`}>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words overflow-wrap-break-word">
-                {report.feedback || 'لا توجد تعليقات بعد'}
-              </p>
+              <div>
+                <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-1">الملاحظات المكتوبة</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words overflow-wrap-break-word">
+                  {report.feedback || 'لا توجد تعليقات مكتوبة بعد'}
+                </p>
+              </div>
+
+              {(report.supervisorFileUrl || report.SupervisorFileUrl) && (
+                <div className="pt-3 border-t border-slate-200/60 dark:border-slate-700/60">
+                  <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">ملف المشرف المرفق</p>
+                  <a
+                    href={report.supervisorFileUrl || report.SupervisorFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-primary/30 rounded-lg text-sm font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-base">attachment</span>
+                    فتح ملف المشرف المرفق
+                    <span className="material-symbols-outlined text-xs">open_in_new</span>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>

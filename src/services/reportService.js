@@ -34,10 +34,10 @@ const reportService = {
   /**
    * PUT /api/Reports/{id}/feedback
    * Supervisor adds feedback.
-   * DTO (AddFeedbackDto): { Feedback, Status }
+   * DTO (AddFeedbackDto): { Feedback, SupervisorFileUrl, Status }
    */
-  provideFeedback: async (reportId, { Feedback, Status }) => {
-    const response = await apiClient.put(`/Reports/${reportId}/feedback`, { Feedback, Status });
+  provideFeedback: async (reportId, { Feedback, SupervisorFileUrl, Status }) => {
+    const response = await apiClient.put(`/Reports/${reportId}/feedback`, { Feedback, SupervisorFileUrl, Status });
     return response.data;
   }
 };
